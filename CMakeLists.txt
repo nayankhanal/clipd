@@ -10,6 +10,8 @@ endif()
 
 add_compile_options(-Wall -Wextra)
 
+find_package(Threads REQUIRED)
+
 # ---- core (OS-agnostic, unit-testable) ----
 add_library(clipd_core
     src/core/content_type.cpp
@@ -32,11 +34,23 @@ else()
     add_library(clipd_platform INTERFACE)
 endif()
 
+# ---- control-socket IPC (plain POSIX sockets, builds on any Unix) ----
+add_library(clipd_ipc
+    src/ipc/socket_path.cpp
+    src/ipc/socket_server.cpp
+)
+target_include_directories(clipd_ipc PUBLIC src)
+target_link_libraries(clipd_ipc PUBLIC Threads::Threads)
+
 # ---- daemon ----
 if(UNIX AND NOT APPLE)
     add_executable(clipd src/main.cpp)
-    target_link_libraries(clipd PRIVATE clipd_core clipd_platform)
+    target_link_libraries(clipd PRIVATE clipd_core clipd_platform clipd_ipc)
 endif()
+
+# ---- clipdctl (control CLI, needs only the socket path, builds anywhere) ----
+add_executable(clipdctl cli/clipdctl.cpp)
+target_link_libraries(clipdctl PRIVATE clipd_ipc)
 
 enable_testing()
 add_subdirectory(tests)
