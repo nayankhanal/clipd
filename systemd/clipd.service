@@ -1,0 +1,11 @@
+[Unit]
+Description=clipd - clipboard content cleaner daemon
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/local/bin/clipd
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,15 @@
+# Copy to ~/.config/clipd/config.toml
+# NOTE: config loading is not wired up yet (v1 scaffold) — this is the
+# planned shape, not yet read by the daemon.
+
+[detectors]
+json = true
+stack_trace = true
+code = true
+
+[cleaners]
+normalize_quotes = true
+strip_invisible_chars = true
+strip_trailing_whitespace = true
+fix_indentation = true
+spaces_per_tab = 4
