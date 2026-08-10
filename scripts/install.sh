@@ -11,6 +11,7 @@ cmake -S "$ROOT_DIR" -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Release
 cmake --build "$BUILD_DIR" -j
 
 sudo install -m 755 "$BUILD_DIR/clipd" /usr/local/bin/clipd
+sudo install -m 755 "$BUILD_DIR/clipdctl" /usr/local/bin/clipdctl
 
 mkdir -p "$HOME/.config/systemd/user"
 cp "$ROOT_DIR/systemd/clipd.service" "$HOME/.config/systemd/user/clipd.service"
@@ -19,3 +20,4 @@ systemctl --user daemon-reload
 systemctl --user enable --now clipd
 
 echo "clipd installed and running. Check status with: systemctl --user status clipd"
+echo "control it with: clipdctl <pause|resume|toggle|status>"

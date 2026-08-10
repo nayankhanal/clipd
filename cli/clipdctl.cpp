@@ -46,7 +46,8 @@ int main(int argc, char** argv) {
     }
 
     std::string request = command + "\n";
-    write(fd, request.data(), request.size());
+    ssize_t written = write(fd, request.data(), request.size());
+    (void)written;
 
     char buffer[256] = {0};
     ssize_t n = read(fd, buffer, sizeof(buffer) - 1);

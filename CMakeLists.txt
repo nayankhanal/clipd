@@ -14,6 +14,7 @@ find_package(Threads REQUIRED)
 
 # ---- core (OS-agnostic, unit-testable) ----
 add_library(clipd_core
+    src/core/config.cpp
     src/core/content_type.cpp
     src/core/detector.cpp
     src/core/cleaners/json_formatter.cpp

@@ -91,7 +91,11 @@ void ControlServer::handle_client(int client_fd) {
         response = "error unknown command\n";
     }
 
-    write(client_fd, response.data(), response.size());
+    // Best-effort: this is a short local reply to a client that's about
+    // to read it immediately; a partial/failed write just means the
+    // client sees a truncated or missing response, nothing to recover.
+    ssize_t written = write(client_fd, response.data(), response.size());
+    (void)written;
 }
 
 } // namespace clipd

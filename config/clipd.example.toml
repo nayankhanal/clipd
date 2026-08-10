@@ -1,6 +1,6 @@
 # Copy to ~/.config/clipd/config.toml
-# NOTE: config loading is not wired up yet (v1 scaffold) — this is the
-# planned shape, not yet read by the daemon.
+# Missing file / missing keys / unparseable values all fall back to
+# the defaults shown below — nothing here is required.
 
 [detectors]
 json = true
@@ -8,8 +8,8 @@ stack_trace = true
 code = true
 
 [cleaners]
-normalize_quotes = true
-strip_invisible_chars = true
-strip_trailing_whitespace = true
+# Smart-quote/invisible-char/trailing-whitespace normalization always
+# runs — it's non-destructive, so there's no toggle for it. Only
+# indentation rewriting (which is more opinionated) is configurable:
 fix_indentation = true
 spaces_per_tab = 4
