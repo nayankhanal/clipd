@@ -17,7 +17,8 @@ mkdir -p "$HOME/.config/systemd/user"
 cp "$ROOT_DIR/systemd/clipd.service" "$HOME/.config/systemd/user/clipd.service"
 
 systemctl --user daemon-reload
-systemctl --user enable --now clipd
+systemctl --user enable clipd
+systemctl --user restart clipd
 
 echo "clipd installed and running. Check status with: systemctl --user status clipd"
 echo "control it with: clipdctl <pause|resume|toggle|status>"
