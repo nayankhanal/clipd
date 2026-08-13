@@ -1,15 +1,19 @@
 #pragma once
 
 #include <atomic>
+#include <functional>
 #include <thread>
 
 namespace clipd {
 
 // Background control socket the daemon listens on so clipdctl can
-// pause/resume/query it without restarting the process.
+// pause/resume/query/undo without restarting the process.
 class ControlServer {
 public:
-    explicit ControlServer(std::atomic<bool>& paused);
+    // `on_undo` is invoked when an "undo" command arrives; it returns
+    // true if something was restored. May block until the watch thread
+    // processes the request.
+    ControlServer(std::atomic<bool>& paused, std::function<bool()> on_undo);
     ~ControlServer();
 
     ControlServer(const ControlServer&) = delete;
@@ -26,6 +30,7 @@ private:
     void handle_client(int client_fd);
 
     std::atomic<bool>& paused_;
+    std::function<bool()> on_undo_;
     int listen_fd_ = -1;
     std::thread thread_;
     std::atomic<bool> running_{false};

@@ -50,11 +50,11 @@ int main() {
 
     clipd::Config config = clipd::load_config(clipd::default_config_path());
 
-    std::atomic<bool> paused{false};
-    clipd::ControlServer control(paused);
-    control.start();
-
     auto backend = clipd::make_platform_backend();
+
+    std::atomic<bool> paused{false};
+    clipd::ControlServer control(paused, [&] { return backend->undo_last(); });
+    control.start();
 
     backend->watch([&](const std::string& raw) {
         if (paused) {
@@ -72,6 +72,7 @@ int main() {
 
         std::cout << "clipd: [" << clipd::to_string(type) << "] cleaned "
                    << raw.size() << " -> " << cleaned.size() << " bytes" << std::endl;
+        backend->save_undo(raw);
         backend->set_content(cleaned);
     });
 

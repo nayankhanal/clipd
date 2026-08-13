@@ -10,7 +10,8 @@
 
 namespace clipd {
 
-ControlServer::ControlServer(std::atomic<bool>& paused) : paused_(paused) {}
+ControlServer::ControlServer(std::atomic<bool>& paused, std::function<bool()> on_undo)
+    : paused_(paused), on_undo_(std::move(on_undo)) {}
 
 ControlServer::~ControlServer() {
     stop();
@@ -87,6 +88,9 @@ void ControlServer::handle_client(int client_fd) {
         response = paused_ ? "ok paused\n" : "ok resumed\n";
     } else if (command == "status") {
         response = paused_ ? "paused\n" : "running\n";
+    } else if (command == "undo") {
+        bool restored = on_undo_ ? on_undo_() : false;
+        response = restored ? "ok restored\n" : "error nothing to undo\n";
     } else {
         response = "error unknown command\n";
     }

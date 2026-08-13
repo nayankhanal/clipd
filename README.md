@@ -72,9 +72,14 @@ this script after pulling new changes rebuilds and restarts the service.
 
 ```bash
 systemctl --user status clipd     # check it's running
-clipdctl status                   # pause/resume/toggle/status
+clipdctl status                   # pause/resume/toggle/status/undo
+clipdctl undo                     # restore the clipboard to its pre-clean value
 journalctl --user -u clipd -f     # watch it live
 ```
+
+`clipdctl undo` reverses the most recent clean by restoring the original
+copied value to the clipboard — one level of history, so if a detector
+misfires you can get the untouched text back without re-copying it.
 
 ## Configuration
 

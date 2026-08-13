@@ -10,7 +10,7 @@
 namespace {
 
 void print_usage() {
-    std::cerr << "usage: clipdctl <pause|resume|toggle|status>\n";
+    std::cerr << "usage: clipdctl <pause|resume|toggle|status|undo>\n";
 }
 
 } // namespace
@@ -22,7 +22,8 @@ int main(int argc, char** argv) {
     }
 
     std::string command = argv[1];
-    if (command != "pause" && command != "resume" && command != "toggle" && command != "status") {
+    if (command != "pause" && command != "resume" && command != "toggle" &&
+        command != "status" && command != "undo") {
         print_usage();
         return 1;
     }

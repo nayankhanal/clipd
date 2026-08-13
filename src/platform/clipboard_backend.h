@@ -19,6 +19,17 @@ public:
 
     // Replaces the clipboard content and becomes the new selection owner.
     virtual void set_content(const std::string& text) = 0;
+
+    // Records `original` as the value to restore if undo is requested.
+    // Called on the watch thread right before a clean overwrites the
+    // clipboard. Only one level of history is kept.
+    virtual void save_undo(const std::string& original) { (void)original; }
+
+    // Restores the last saved pre-clean value to the clipboard. May be
+    // called from another thread; the implementation is responsible for
+    // performing the actual write safely. Returns true if something was
+    // restored, false if there was nothing to undo.
+    virtual bool undo_last() { return false; }
 };
 
 // Implemented per-OS (see linux_x11.cpp for v1).
