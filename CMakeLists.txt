@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(clipd CXX)
+project(clipd C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -26,9 +26,53 @@ target_include_directories(clipd_core PUBLIC src)
 # ---- platform backend ----
 if(UNIX AND NOT APPLE)
     find_package(X11 REQUIRED)
-    add_library(clipd_platform src/platform/linux_x11.cpp)
+
+    # Auto-detect Wayland support. If libwayland-client and wayland-scanner
+    # are present, build the real wlr-data-control backend; otherwise fall
+    # back to a stub so X11-only machines still build fine.
+    set(CLIPD_WAYLAND OFF)
+    find_package(PkgConfig QUIET)
+    if(PkgConfig_FOUND)
+        pkg_check_modules(WAYLAND_CLIENT QUIET wayland-client)
+        find_program(WAYLAND_SCANNER wayland-scanner)
+        if(WAYLAND_CLIENT_FOUND AND WAYLAND_SCANNER)
+            set(CLIPD_WAYLAND ON)
+        endif()
+    endif()
+
+    set(PLATFORM_SOURCES
+        src/platform/backend_factory.cpp
+        src/platform/linux_x11.cpp
+    )
+
+    if(CLIPD_WAYLAND)
+        message(STATUS "clipd: Wayland backend enabled (wlr-data-control)")
+        set(WL_PROTO ${CMAKE_CURRENT_SOURCE_DIR}/protocol/wlr-data-control-unstable-v1.xml)
+        set(WL_GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/wayland-generated)
+        file(MAKE_DIRECTORY ${WL_GEN_DIR})
+        set(WL_HEADER ${WL_GEN_DIR}/wlr-data-control-unstable-v1-client-protocol.h)
+        set(WL_CODE ${WL_GEN_DIR}/wlr-data-control-unstable-v1-protocol.c)
+        add_custom_command(
+            OUTPUT ${WL_HEADER}
+            COMMAND ${WAYLAND_SCANNER} client-header ${WL_PROTO} ${WL_HEADER}
+            DEPENDS ${WL_PROTO} VERBATIM)
+        add_custom_command(
+            OUTPUT ${WL_CODE}
+            COMMAND ${WAYLAND_SCANNER} private-code ${WL_PROTO} ${WL_CODE}
+            DEPENDS ${WL_PROTO} VERBATIM)
+        list(APPEND PLATFORM_SOURCES src/platform/linux_wayland_impl.cpp ${WL_CODE} ${WL_HEADER})
+    else()
+        message(STATUS "clipd: Wayland backend disabled (libwayland-client / wayland-scanner not found)")
+        list(APPEND PLATFORM_SOURCES src/platform/linux_wayland.cpp)
+    endif()
+
+    add_library(clipd_platform ${PLATFORM_SOURCES})
     target_link_libraries(clipd_platform PUBLIC ${X11_LIBRARIES} Xfixes)
     target_include_directories(clipd_platform PUBLIC src ${X11_INCLUDE_DIR})
+    if(CLIPD_WAYLAND)
+        target_include_directories(clipd_platform PRIVATE ${WL_GEN_DIR} ${WAYLAND_CLIENT_INCLUDE_DIRS})
+        target_link_libraries(clipd_platform PUBLIC ${WAYLAND_CLIENT_LIBRARIES})
+    endif()
 else()
     message(WARNING "No platform clipboard backend for this OS yet (v1 targets Linux/X11). "
                      "clipd_core will still build and its tests will still run.")

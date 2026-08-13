@@ -32,7 +32,12 @@ public:
     virtual bool undo_last() { return false; }
 };
 
-// Implemented per-OS (see linux_x11.cpp for v1).
+// Chooses and constructs the right backend for the current session
+// (Wayland vs X11). Throws std::runtime_error if no backend is usable.
 std::unique_ptr<ClipboardBackend> make_platform_backend();
+
+// Per-backend constructors, implemented in their platform files.
+std::unique_ptr<ClipboardBackend> make_x11_backend();
+std::unique_ptr<ClipboardBackend> make_wayland_backend();
 
 } // namespace clipd

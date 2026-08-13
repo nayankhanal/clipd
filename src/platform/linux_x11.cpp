@@ -251,7 +251,7 @@ private:
     bool undo_restored_ = false;
 };
 
-std::unique_ptr<ClipboardBackend> make_platform_backend() {
+std::unique_ptr<ClipboardBackend> make_x11_backend() {
     return std::make_unique<LinuxX11Backend>();
 }
 
